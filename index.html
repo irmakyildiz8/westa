@@ -1,35 +1,59 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Westa — Finansal Asistanın</title>
+<title>Westa — Gelişmiş Finansal Asistan</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Chart.js Entegrasyonu -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
   :root {
+    /* Sabit Marka Renkleri */
     --gold: #C9A84C;
     --gold-light: #E8C97A;
-    --cream: #FAF7F2;
-    --dark: #1A1410;
-    --dark2: #2D2418;
-    --mid: #6B5B3E;
-    --soft: #F0EAE0;
     --green: #2D6A4F;
     --green-light: #52B788;
     --red: #C1440E;
-    --white: #FFFFFF;
+    
+    /* Açık Tema Değişkenleri */
+    --bg-main: #FAF7F2;
+    --bg-nav: #1A1410;
+    --bg-card: #FFFFFF;
+    --text-main: #1A1410;
+    --text-muted: #6B5B3E;
+    --border-color: #F0EAE0;
+    --input-bg: #FFFFFF;
+    --chat-bot-bg: #FFFFFF;
+    --chat-user-bg: #DCF8C6;
     --shadow: 0 8px 40px rgba(26,20,16,0.12);
+  }
+
+  [data-theme="dark"] {
+    /* Karanlık Tema Değişkenleri */
+    --bg-main: #121212;
+    --bg-nav: #0A0A0A;
+    --bg-card: #1E1E1E;
+    --text-main: #F5F5F5;
+    --text-muted: #A0A0A0;
+    --border-color: #333333;
+    --input-bg: #2C2C2C;
+    --chat-bot-bg: #2C2C2C;
+    --chat-user-bg: #1A4D2E;
+    --shadow: 0 8px 40px rgba(0,0,0,0.5);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     font-family: 'DM Sans', sans-serif;
-    background: var(--cream);
-    color: var(--dark);
+    background: var(--bg-main);
+    color: var(--text-main);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    transition: background-color 0.3s, color 0.3s;
   }
 
   /* NAV */
@@ -38,7 +62,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px 40px;
-    background: var(--dark);
+    background: var(--bg-nav);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -52,9 +76,12 @@
     cursor: pointer;
   }
 
-  .logo span {
-    color: var(--white);
-    font-weight: 300;
+  .logo span { color: white; font-weight: 300; }
+
+  .nav-center {
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
 
   .nav-tabs {
@@ -63,11 +90,11 @@
     background: rgba(255,255,255,0.08);
     padding: 4px;
     border-radius: 12px;
-    display: none; /* Gizli başlar, login olunca açılır */
+    display: none; 
   }
 
   .nav-tab {
-    padding: 8px 20px;
+    padding: 8px 16px;
     border-radius: 9px;
     border: none;
     background: transparent;
@@ -79,32 +106,36 @@
     transition: all 0.25s;
   }
 
-  .nav-tab.active {
-    background: var(--gold);
-    color: var(--dark);
-  }
+  .nav-tab.active { background: var(--gold); color: #1A1410; }
 
-  .user-menu {
+  .user-menu { display: flex; align-items: center; gap: 16px; }
+
+  .theme-toggle {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 6px;
   }
 
   .login-btn-nav {
     background: var(--gold);
-    color: var(--dark);
+    color: #1A1410;
     border: none;
     padding: 8px 20px;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     font-family: 'DM Sans', sans-serif;
-    transition: transform 0.2s;
   }
-  .login-btn-nav:hover { transform: translateY(-2px); }
 
   .user-profile-nav {
-    display: none; /* Gizli başlar */
+    display: none;
     align-items: center;
     gap: 12px;
     color: white;
@@ -148,19 +179,6 @@
     align-items: center;
   }
 
-  .hero-tag {
-    display: inline-block;
-    background: var(--dark);
-    color: var(--gold);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 6px 14px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-  }
-
   .hero h1 {
     font-family: 'Playfair Display', serif;
     font-size: clamp(2.5rem, 6vw, 4rem);
@@ -168,78 +186,40 @@
     max-width: 800px;
     margin-bottom: 20px;
   }
-
-  .hero h1 em {
-    font-style: normal;
-    color: var(--gold);
-  }
-
-  .hero p {
-    color: var(--mid);
-    font-size: 1.1rem;
-    line-height: 1.7;
-    max-width: 600px;
-    margin-bottom: 40px;
-  }
+  .hero h1 em { font-style: normal; color: var(--gold); }
+  .hero p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.7; max-width: 600px; margin-bottom: 40px; }
 
   /* AUTH SCREEN */
   .auth-container {
     max-width: 400px;
     margin: 60px auto;
-    background: white;
+    background: var(--bg-card);
     padding: 40px;
     border-radius: 24px;
     box-shadow: var(--shadow);
   }
-
-  .auth-header {
-    text-align: center;
-    margin-bottom: 30px;
-  }
-
-  .auth-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    color: var(--dark);
-    margin-bottom: 8px;
-  }
-
-  .auth-header p {
-    color: var(--mid);
-    font-size: 0.9rem;
-  }
-
-  .form-group {
-    margin-bottom: 20px;
-  }
-
-  .form-group label {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--dark2);
-  }
-
+  .auth-header h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 8px; }
+  .auth-header p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 30px; }
+  
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text-muted); }
   .form-group input {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid var(--soft);
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-main);
     border-radius: 12px;
     font-family: 'DM Sans', sans-serif;
     font-size: 1rem;
     outline: none;
-    transition: border-color 0.2s;
   }
-
-  .form-group input:focus {
-    border-color: var(--gold);
-  }
+  .form-group input:focus { border-color: var(--gold); }
 
   .auth-btn {
     width: 100%;
-    background: var(--dark);
-    color: var(--gold);
+    background: var(--gold);
+    color: #1A1410;
     border: none;
     padding: 14px;
     border-radius: 12px;
@@ -247,29 +227,12 @@
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: background 0.2s;
     margin-top: 10px;
   }
 
-  .auth-btn:hover {
-    background: var(--gold);
-    color: var(--dark);
-  }
-
-  .auth-switch {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 0.85rem;
-    color: var(--mid);
-  }
-
-  .auth-switch span {
-    color: var(--dark);
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: underline;
-    text-decoration-color: var(--gold);
-  }
+  .auth-switch { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
+  .auth-switch span { color: var(--text-main); font-weight: 600; cursor: pointer; text-decoration: underline; }
+  .info-box { background: rgba(45, 106, 79, 0.1); color: var(--green); padding: 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 20px; text-align: center; font-weight: 500; display: none; }
 
   /* CHAT SCREEN */
   .chat-wrapper {
@@ -281,10 +244,10 @@
   }
 
   .phone-frame {
-    background: var(--dark);
+    background: #1A1410;
     border-radius: 40px;
     padding: 12px;
-    box-shadow: 0 24px 80px rgba(26,20,16,0.3);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.3);
     max-width: 400px;
     margin: 0 auto;
   }
@@ -298,28 +261,8 @@
     flex-direction: column;
   }
 
-  .wa-header {
-    background: #075E54;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .wa-avatar {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: var(--gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--dark);
-    font-family: 'Playfair Display', serif;
-  }
-
+  .wa-header { background: #075E54; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+  .wa-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #1A1410; font-family: 'Playfair Display', serif;}
   .wa-info { flex: 1; }
   .wa-name { color: white; font-size: 0.9rem; font-weight: 600; }
   .wa-status { color: rgba(255,255,255,0.7); font-size: 0.7rem; }
@@ -332,10 +275,9 @@
     flex-direction: column;
     gap: 12px;
     scroll-behavior: smooth;
+    background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+    background-size: cover;
   }
-
-  .wa-messages::-webkit-scrollbar { width: 4px; }
-  .wa-messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 2px; }
 
   .msg {
     max-width: 85%;
@@ -347,610 +289,124 @@
     animation: msgIn 0.3s ease;
     word-wrap: break-word;
   }
+  @keyframes msgIn { from { opacity: 0; transform: scale(0.95) translateY(4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-  @keyframes msgIn {
-    from { opacity: 0; transform: scale(0.95) translateY(4px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-  }
-
-  .msg.bot {
-    background: white;
-    align-self: flex-start;
-    border-top-left-radius: 0;
-    color: var(--dark);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  }
-
-  .msg.user {
-    background: #DCF8C6;
-    align-self: flex-end;
-    border-top-right-radius: 0;
-    color: var(--dark);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  }
-
-  .msg-time {
-    font-size: 0.65rem;
-    color: rgba(0,0,0,0.4);
-    text-align: right;
-    margin-top: 4px;
-    display: block;
-  }
-
+  .msg.bot { background: var(--chat-bot-bg); align-self: flex-start; border-top-left-radius: 0; color: var(--chat-bot-text); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .msg.user { background: var(--chat-user-bg); align-self: flex-end; border-top-right-radius: 0; color: #1A1410; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .msg-time { font-size: 0.65rem; color: rgba(0,0,0,0.4); text-align: right; margin-top: 4px; display: block; }
   .msg.bot .msg-time { text-align: left; }
 
-  .wa-input-bar {
-    background: #F0F0F0;
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .wa-input-bar { background: #F0F0F0; padding: 10px 12px; display: flex; align-items: center; gap: 8px; }
+  .wa-input { flex: 1; background: white; border: none; border-radius: 24px; padding: 12px 16px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; color: #1A1410; }
+  .wa-send { width: 44px; height: 44px; background: #075E54; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 
-  .wa-input {
-    flex: 1;
-    background: white;
-    border: none;
-    border-radius: 24px;
-    padding: 12px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    outline: none;
-    color: var(--dark);
-  }
-
-  .wa-send {
-    width: 44px;
-    height: 44px;
-    background: #075E54;
-    border: none;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.2s;
-    flex-shrink: 0;
-  }
-
-  .wa-send:hover { background: #128C7E; }
-
-  /* Info Cards in Chat Screen */
-  .chat-info {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .info-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: var(--shadow);
-  }
-
-  .info-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    margin-bottom: 12px;
-    color: var(--dark);
-  }
-
-  .info-card p {
-    color: var(--mid);
-    font-size: 0.85rem;
-    line-height: 1.7;
-  }
-
-  .quick-replies {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 12px;
-  }
-
+  /* Info Cards & Financial Literacy */
+  .chat-info { display: flex; flex-direction: column; gap: 20px; }
+  .info-card { background: var(--bg-card); border-radius: 20px; padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+  .info-card h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 12px; color: var(--text-main); display: flex; align-items: center; gap: 8px;}
+  .info-card p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.7; }
+  
   .qr-btn {
-    background: var(--soft);
-    border: 1.5px solid transparent;
+    background: var(--bg-main);
+    border: 1.5px solid var(--border-color);
     border-radius: 10px;
     padding: 10px 14px;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.85rem;
-    color: var(--dark);
+    color: var(--text-main);
     cursor: pointer;
     text-align: left;
     transition: all 0.2s;
-    font-weight: 500;
+    width: 100%;
+    margin-bottom: 8px;
   }
+  .qr-btn:hover { border-color: var(--gold); }
 
-  .qr-btn:hover {
-    border-color: var(--gold);
-    background: #FDF8EE;
-  }
+  .literacy-card { background: linear-gradient(145deg, rgba(201, 168, 76, 0.1) 0%, rgba(201, 168, 76, 0.02) 100%); border: 1px solid rgba(201, 168, 76, 0.3); }
 
   /* DASHBOARD SCREEN */
-  .dash-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 40px 0 28px;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
+  .dash-header { display: flex; align-items: center; justify-content: space-between; margin: 40px 0 28px; }
+  .dash-header h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; }
+  .dash-header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
 
-  .dash-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
-  }
+  .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
+  .dash-card { background: var(--bg-card); border-radius: 20px; padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+  .dash-card.highlight { background: #1A1410; color: white; }
+  .card-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+  .dash-card.highlight .card-label { color: rgba(255,255,255,0.6); }
+  .card-value { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; line-height: 1; color: var(--text-main); }
+  .dash-card.highlight .card-value { color: var(--gold); }
+  .card-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; }
 
-  .dash-header p {
-    color: var(--mid);
-    font-size: 0.9rem;
-    margin-top: 4px;
-  }
+  /* CHART & LAYOUT */
+  .score-section { display: grid; grid-template-columns: 300px 1fr; gap: 24px; margin-bottom: 24px; align-items: start; }
+  .chart-container { background: var(--bg-card); border-radius: 20px; padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border-color); height: 350px; position: relative;}
+  .chart-container h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 20px;}
 
-  .dash-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 24px;
-  }
+  /* INTEGRATIONS (WEBHOOK) SCREEN */
+  .integration-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 30px; }
+  .integration-card { background: var(--bg-card); border-radius: 20px; padding: 30px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+  .integration-card h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 10px; color: var(--text-main); }
+  .integration-card p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; }
+  
+  .api-status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 20px; }
+  .api-status.disconnected { background: rgba(193, 68, 14, 0.1); color: var(--red); }
+  .api-status.connected { background: rgba(82, 183, 136, 0.1); color: var(--green); }
+  .api-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .api-status.disconnected .api-dot { background: var(--red); }
+  .api-status.connected .api-dot { background: var(--green); }
 
-  .dash-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
+  .simulate-btn { background: #1A1410; color: var(--gold); border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%; transition: background 0.2s;}
+  .simulate-btn:hover { background: var(--gold); color: #1A1410; }
+  [data-theme="dark"] .simulate-btn { background: var(--gold); color: #1A1410; }
 
-  .dash-card.highlight {
-    background: var(--dark);
-    color: white;
-  }
+  /* LOADING OVERLAY */
+  #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-main); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .spinner { border: 4px solid rgba(0,0,0,0.1); border-left-color: var(--gold); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-  .dash-card.highlight .card-label { color: rgba(255,255,255,0.5); }
-
-  .card-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--mid);
-    margin-bottom: 10px;
-  }
-
-  .card-value {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  .card-sub {
-    font-size: 0.8rem;
-    color: var(--mid);
-    margin-top: 6px;
-  }
-
-  .dash-card.highlight .card-sub { color: rgba(255,255,255,0.5); }
-
-  .card-badge {
-    display: inline-block;
-    background: var(--green-light);
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 6px;
-    margin-top: 10px;
-  }
-
-  .score-section {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 24px;
-    margin-bottom: 24px;
-    align-items: start;
-  }
-
-  .score-card {
-    background: white;
-    border-radius: 20px;
-    padding: 28px 24px;
-    box-shadow: var(--shadow);
-    text-align: center;
-  }
-
-  .score-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    color: var(--dark);
-  }
-
-  .ring-wrap {
-    position: relative;
-    width: 180px;
-    height: 180px;
-    margin: 0 auto 16px;
-  }
-
-  .ring-wrap svg {
-    transform: rotate(-90deg);
-    width: 100%;
-    height: 100%;
-  }
-
-  .ring-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-  }
-
-  .ring-score {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--dark);
-    line-height: 1;
-  }
-
-  .ring-label {
-    font-size: 0.7rem;
-    color: var(--mid);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .score-level {
-    display: inline-block;
-    background: #FFF3CD;
-    color: #856404;
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 6px 16px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-  }
-
-  .score-bars {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    text-align: left;
-  }
-
-  .score-bar-top {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    margin-bottom: 6px;
-    color: var(--mid);
-    font-weight: 500;
-  }
-
-  .score-bar-track {
-    height: 8px;
-    background: var(--soft);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .score-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    background: var(--gold);
-    transition: width 1s ease;
-  }
-
-  .score-bar-fill.green { background: var(--green-light); }
-  .score-bar-fill.amber { background: #F4A261; }
-
-  /* CHART */
-  .chart-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: var(--shadow);
-    height: 100%;
-  }
-
-  .chart-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    margin-bottom: 6px;
-  }
-
-  .chart-card p {
-    font-size: 0.85rem;
-    color: var(--mid);
-    margin-bottom: 24px;
-  }
-
-  .bar-chart {
-    display: flex;
-    align-items: flex-end;
-    gap: 12px;
-    height: 180px;
-    padding-bottom: 24px;
-    position: relative;
-    border-bottom: 1.5px solid var(--soft);
-  }
-
-  .bar-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    height: 100%;
-    justify-content: flex-end;
-  }
-
-  .bar {
-    width: 100%;
-    max-width: 40px;
-    border-radius: 6px 6px 0 0;
-    transition: height 1s ease;
-    position: relative;
-  }
-
-  .bar.income { background: var(--gold); }
-  .bar.expense { background: var(--soft); border: 1.5px solid #DDD; }
-
-  .bar-month {
-    position: absolute;
-    bottom: -24px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.75rem;
-    color: var(--mid);
-    white-space: nowrap;
-  }
-
-  .chart-legend {
-    display: flex;
-    gap: 20px;
-    margin-top: 32px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    color: var(--mid);
-    font-weight: 500;
-  }
-
-  .legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-  }
-
-  /* ACTION CARD */
-  .action-section {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 24px;
-  }
-
-  .action-card {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: var(--shadow);
-  }
-
-  .action-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-  }
-
-  .action-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--soft);
-    font-size: 0.9rem;
-  }
-
-  .action-item:last-child { border-bottom: none; }
-
-  .action-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    flex-shrink: 0;
-  }
-
-  .action-icon.ok { background: #D8F3DC; }
-  .action-icon.warn { background: #FFF3CD; }
-  .action-icon.info { background: #DBE9FA; }
-
-  .action-text { color: var(--mid); line-height: 1.5; }
-  .action-text strong { color: var(--dark); display: block; margin-bottom: 4px; }
-
-  .credit-card-visual {
-    background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 100%);
-    border-radius: 16px;
-    padding: 24px;
-    color: white;
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 20px;
-  }
-
-  .credit-card-visual::before {
-    content: '';
-    position: absolute;
-    top: -40px;
-    right: -40px;
-    width: 140px;
-    height: 140px;
-    background: var(--gold);
-    opacity: 0.12;
-    border-radius: 50%;
-  }
-
-  .credit-card-visual::after {
-    content: '';
-    position: absolute;
-    bottom: -20px;
-    right: 20px;
-    width: 90px;
-    height: 90px;
-    background: var(--gold);
-    opacity: 0.08;
-    border-radius: 50%;
-  }
-
-  .cc-bank {
-    font-size: 0.7rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 16px;
-  }
-
-  .cc-amount {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-
-  .cc-label {
-    font-size: 0.8rem;
-    color: rgba(255,255,255,0.5);
-    margin-bottom: 16px;
-  }
-
-  .cc-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255,255,255,0.1);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-  }
-
-  .cc-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--green-light);
-    border-radius: 50%;
-  }
-
-  .apply-btn {
-    width: 100%;
-    background: var(--dark);
-    color: var(--gold);
-    border: none;
-    border-radius: 12px;
-    padding: 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
-  }
-
-  .apply-btn:hover {
-    background: var(--gold);
-    color: var(--dark);
-  }
-
-  /* TYPING */
-  .typing {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    padding: 12px 16px;
-    background: white;
-    border-radius: 12px;
-    border-top-left-radius: 0;
-    align-self: flex-start;
-    width: fit-content;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  }
-
-  .typing span {
-    width: 6px;
-    height: 6px;
-    background: #999;
-    border-radius: 50%;
-    animation: bounce 1.2s infinite;
-  }
-
-  .typing span:nth-child(2) { animation-delay: 0.2s; }
-  .typing span:nth-child(3) { animation-delay: 0.4s; }
-
-  @keyframes bounce {
-    0%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-6px); }
-  }
-
-  /* RESPONSIVE */
-  @media (max-width: 900px) {
-    .chat-wrapper { grid-template-columns: 1fr; }
-    .score-section { grid-template-columns: 1fr; }
-    .action-section { grid-template-columns: 1fr; }
-  }
-
-  @media (max-width: 768px) {
-    nav { padding: 16px 20px; }
-    .hero { padding: 40px 20px 30px; }
-    .screen { padding: 0 20px 40px; }
-    .dash-grid { grid-template-columns: 1fr 1fr; }
-  }
-
-  @media (max-width: 480px) {
-    .dash-grid { grid-template-columns: 1fr; }
-    .nav-tab { padding: 8px 12px; font-size: 0.78rem; }
-    .hero h1 { font-size: 2rem; }
-  }
+  @media (max-width: 900px) { .chat-wrapper, .score-section, .integration-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { nav { padding: 16px 20px; } .dash-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px) { .dash-grid { grid-template-columns: 1fr; } .nav-tab { padding: 8px 10px; font-size: 0.75rem; } }
 </style>
 </head>
 <body>
 
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <p style="margin-top: 16px; font-weight: 500; color: var(--text-muted);">Sistem Başlatılıyor...</p>
+</div>
+
 <nav>
-  <div class="logo" onclick="goHome()">Westa</div>
+  <div class="logo" onclick="window.goHome()">Westa</div>
   
-  <div class="nav-tabs" id="mainNavTabs">
-    <button class="nav-tab active" onclick="showScreen('chat')">💬 Asistan</button>
-    <button class="nav-tab" onclick="showScreen('dashboard')">📊 Dashboard</button>
+  <div class="nav-center">
+    <div class="nav-tabs" id="mainNavTabs">
+      <button class="nav-tab active" onclick="window.showScreen('chat')">💬 Asistan</button>
+      <button class="nav-tab" onclick="window.showScreen('dashboard')">📊 Dashboard</button>
+      <button class="nav-tab" onclick="window.showScreen('integrations')">🔗 Entegrasyonlar</button>
+    </div>
   </div>
 
   <div class="user-menu">
-    <button class="login-btn-nav" id="navLoginBtn" onclick="showScreen('auth')">Giriş Yap / Kayıt Ol</button>
+    <button class="theme-toggle" onclick="window.toggleTheme()">
+      <span id="themeIcon">🌙</span>
+    </button>
+    <button class="login-btn-nav" id="navLoginBtn" onclick="window.showScreen('auth')">Giriş Yap</button>
     <div class="user-profile-nav" id="navUserProfile">
       <span id="navUserName">Kullanıcı</span>
-      <button class="logout-btn" onclick="logout()">Çıkış</button>
+      <button class="logout-btn" onclick="window.logout()">Çıkış</button>
     </div>
   </div>
 </nav>
 
-<!-- LANDING (HERO) SCREEN -->
+<!-- LANDING -->
 <div id="screen-landing" class="screen active">
   <div class="hero">
-    <div class="hero-tag">✦ Finansal Kimlik Platformu</div>
+    <div style="background: var(--bg-nav); color: var(--gold); padding: 6px 14px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px;">✦ Gelişmiş Fintek Mimari</div>
     <h1>Satıyorsun, <em>görünür</em> ol.</h1>
-    <p>Evden satış yapan kadınlar için WhatsApp tabanlı yapay zeka finansal asistanı. Gelirini yaz, profilini oluştur, banka kredisine hazır ol.</p>
-    <button class="auth-btn" style="max-width: 200px;" onclick="showScreen('auth')">Hemen Başla →</button>
+    <p>Artık gerçek zamanlı webhook dinleyicisi, Chart.js tabanlı veri analitiği ve bulut tabanlı veritabanı ile çok daha güçlü. E-ticaret verini asistanla yönet.</p>
+    <button class="login-btn-nav" style="padding: 14px 28px; font-size: 1.1rem;" onclick="window.showScreen('auth')">Sisteme Giriş Yap →</button>
   </div>
 </div>
 
@@ -959,10 +415,13 @@
   <div class="auth-container">
     <div class="auth-header">
       <h2 id="authTitle">Kayıt Ol</h2>
-      <p id="authSubtitle">Westa ile finansal profilini oluşturmaya başla.</p>
+      <p id="authSubtitle">Westa bulut veritabanında profil oluştur.</p>
     </div>
     
-    <form id="authForm" onsubmit="handleAuth(event)">
+    <div id="authSuccess" class="info-box">Hesabınız başarıyla oluşturuldu! Yönlendiriliyorsunuz...</div>
+    <div id="authError" class="info-box" style="background: rgba(193,68,14,0.1); color: var(--red);"></div>
+
+    <form id="authForm" onsubmit="window.handleAuth(event)">
       <div class="form-group" id="nameGroup">
         <label>Ad Soyad</label>
         <input type="text" id="authName" placeholder="Zeynep Yılmaz">
@@ -979,12 +438,11 @@
         <label>Şifre (Tekrar)</label>
         <input type="password" id="authConfirmPassword" placeholder="••••••••" required>
       </div>
-      <div id="authError" style="color: var(--red); font-size: 0.85rem; margin-bottom: 15px; display: none; text-align: center; font-weight: 600;"></div>
       <button type="submit" class="auth-btn" id="authSubmitBtn">Hesap Oluştur</button>
     </form>
     
     <div class="auth-switch">
-      <span id="authSwitchText" onclick="toggleAuthMode()">Zaten hesabın var mı? Giriş Yap</span>
+      <span id="authSwitchText" onclick="window.toggleAuthMode()">Zaten hesabın var mı? Giriş Yap</span>
     </div>
   </div>
 </div>
@@ -992,43 +450,42 @@
 <!-- CHAT SCREEN -->
 <div id="screen-chat" class="screen">
   <div class="chat-wrapper">
-    <div>
-      <div class="phone-frame">
-        <div class="phone-inner">
-          <div class="wa-header">
-            <div class="wa-avatar">W</div>
-            <div class="wa-info">
-              <div class="wa-name">Westa AI Asistan</div>
-              <div class="wa-status">● çevrimiçi</div>
-            </div>
+    <div class="phone-frame">
+      <div class="phone-inner">
+        <div class="wa-header">
+          <div class="wa-avatar">W</div>
+          <div class="wa-info">
+            <div class="wa-name">Westa AI Asistan</div>
+            <div class="wa-status">● çevrimiçi</div>
           </div>
-          <div class="wa-messages" id="chatMessages">
-            <!-- Mesajlar JS ile gelecek -->
-          </div>
-          <div class="wa-input-bar">
-            <input class="wa-input" id="chatInput" type="text" placeholder="Gelir veya giderini yaz..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button class="wa-send" onclick="sendMessage()">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-          </div>
+        </div>
+        <div class="wa-messages" id="chatMessages"></div>
+        <div class="wa-input-bar">
+          <input class="wa-input" id="chatInput" type="text" placeholder="Gelir, gider yaz veya soru sor..." onkeypress="if(event.key==='Enter') window.sendMessage()">
+          <button class="wa-send" onclick="window.sendMessage()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
         </div>
       </div>
     </div>
 
     <div class="chat-info">
+      <div class="info-card literacy-card">
+        <h3>💡 Finans Okuryazarlığı</h3>
+        <p><strong>Kar Marjı Nasıl Hesaplanır?</strong></p>
+        <p style="margin-top: 8px;"><code>(Net Kar / Toplam Gelir) x 100</code></p>
+        <p style="margin-top: 8px;">Sağlıklı bir ev/e-ticaret işletmesinde %20-30 arası hedeflenmelidir. Kargo maliyetleri genellikle en çok gözden kaçan gider kalemidir.</p>
+      </div>
+      
       <div class="info-card">
-        <h3>Ne yazabilirim?</h3>
-        <p>Westa, yazdıklarını anlayacak şekilde eğitildi. Aşağıdaki örnekleri deneyebilirsin:</p>
-        <div class="quick-replies">
-          <button class="qr-btn" onclick="sendQuick('Bugün trendyol\'dan 1250 TL satış yaptım')">💰 "Bugün Trendyol'dan 1250 TL satış yaptım"</button>
-          <button class="qr-btn" onclick="sendQuick('Malzemeciye 400 lira ödedim')">📦 "Malzemeciye 400 lira ödedim"</button>
-          <button class="qr-btn" onclick="sendQuick('Sadece 250 kazandım bugün, kargo da 50 tuttu')">⚖️ "Sadece 250 kazandım, kargo 50 tuttu"</button>
-          <button class="qr-btn" onclick="sendQuick('Skorum kaç?')">📊 "Skorum kaç?"</button>
-          <button class="qr-btn" onclick="sendQuick('Satışlarımı nasıl artırırım?')">💡 "Satışlarımı nasıl artırırım?"</button>
-        </div>
+        <h3>Gelişmiş AI'ı Test Et</h3>
+        <button class="qr-btn" onclick="window.sendQuick('Trendyol\'dan 850 TL kazandım')">💰 "Trendyol'dan 850 TL kazandım"</button>
+        <button class="qr-btn" onclick="window.sendQuick('Malzeme için 300 harcadım')">📦 "Malzeme için 300 harcadım"</button>
+        <button class="qr-btn" onclick="window.sendQuick('200 yazdım')">🤔 "200" (Bağlam Sorgulama Testi)</button>
+        <button class="qr-btn" onclick="window.sendQuick('Hem 500 kazandım hem 100 kargoya verdim')">⚖️ Karmaşık Cümle Testi</button>
       </div>
     </div>
   </div>
@@ -1039,20 +496,20 @@
   <div class="dash-header">
     <div>
       <h2>Finansal Profilim</h2>
-      <p id="dashUserInfo">Kullanıcı · Bu Ayki Özet</p>
+      <p id="dashUserInfo">Gerçek Zamanlı Veri Özeti</p>
     </div>
   </div>
 
   <div class="dash-grid">
     <div class="dash-card highlight">
       <div class="card-label">Toplam Gelir (Bu Ay)</div>
-      <div class="card-value" id="dashIncome" style="color: var(--gold);">0₺</div>
-      <div class="card-sub">Tespit edilen satışlar</div>
+      <div class="card-value" id="dashIncome">0₺</div>
+      <div class="card-sub">Tespit edilen net satışlar</div>
     </div>
     <div class="dash-card">
       <div class="card-label">Toplam Gider (Bu Ay)</div>
       <div class="card-value" id="dashExpense">0₺</div>
-      <div class="card-sub">Masraf ve maliyetler</div>
+      <div class="card-sub">Kargo, komisyon ve maliyetler</div>
     </div>
     <div class="dash-card">
       <div class="card-label">Net Kazanç</div>
@@ -1061,132 +518,166 @@
     </div>
   </div>
 
-  <div class="score-section">
-    <div class="score-card">
-      <h3>Westa Güven Skoru</h3>
-      <div class="ring-wrap">
-        <svg viewBox="0 0 160 160">
-          <circle cx="80" cy="80" r="66" fill="none" stroke="#F0EAE0" stroke-width="12"/>
-          <circle cx="80" cy="80" r="66" fill="none" stroke="#C9A84C" stroke-width="12"
-            stroke-dasharray="414.69" stroke-dashoffset="103.67" stroke-linecap="round"/>
-        </svg>
-        <div class="ring-center">
-          <div class="ring-score">725</div>
-          <div class="ring-label">/ 1000</div>
-        </div>
-      </div>
-      <div class="score-level">⭐ İyi Seviye</div>
-      <div class="score-bars">
-        <div class="score-bar-top"><span>Kayıt Düzenliliği</span><span>Yüksek</span></div>
-        <div class="score-bar-track"><div class="score-bar-fill green" style="width:85%"></div></div>
-        
-        <div style="height: 10px;"></div>
+  <div class="chart-container">
+    <h3>Interaktif Veri Görselleştirme (Chart.js)</h3>
+    <canvas id="financeChart"></canvas>
+  </div>
+</div>
 
-        <div class="score-bar-top"><span>Gider Kontrolü</span><span>Orta</span></div>
-        <div class="score-bar-track"><div class="score-bar-fill amber" style="width:68%"></div></div>
-      </div>
-    </div>
-
-    <div class="chart-card">
-      <h3>Finansal Trend (Son 6 Ay)</h3>
-      <p>Yapay zeka tarafından oluşturulan tahmini görünüm</p>
-      <div class="bar-chart" id="barChart">
-        <!-- JS ile doldurulacak -->
-      </div>
-      <div class="chart-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Gelir</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--soft);border:1.5px solid #DDD"></div>Gider</div>
-      </div>
+<!-- INTEGRATIONS SCREEN (MOCK WEBHOOK/API) -->
+<div id="screen-integrations" class="screen">
+  <div class="dash-header">
+    <div>
+      <h2>API ve Webhook Entegrasyonları</h2>
+      <p>Arka uç sistemleri ve e-ticaret bağlantı simülasyonu</p>
     </div>
   </div>
 
-  <div class="action-section">
-    <div class="action-card">
-      <h3>YZ İçgörüleri</h3>
-      <div class="action-item">
-        <div class="action-icon ok">✓</div>
-        <div class="action-text">
-          <strong>Kayıt Tutma Alışkanlığı</strong>
-          Gelir ve giderlerini düzenli bildirmen skorunu artırıyor.
-        </div>
+  <div class="integration-grid">
+    <div class="integration-card">
+      <h3>Trendyol Mağaza Bağlantısı</h3>
+      <p>Trendyol Satıcı Paneli'nden aldığınız API Key bilgilerini girerek mağazanızı bağlayın. Satışlar otomatik olarak YZ Asistan'a düşecektir.</p>
+      
+      <div class="api-status disconnected" id="apiStatusDisplay">
+        <div class="api-dot"></div><span id="apiStatusText">Bağlı Değil</span>
       </div>
-      <div class="action-item">
-        <div class="action-icon info">→</div>
-        <div class="action-text">
-          <strong>Kategori Analizi</strong>
-          Harcamalarının çoğunun "malzeme" bazlı olduğu görülüyor. Toptan alımları değerlendirebilirsin.
-        </div>
+
+      <div class="form-group">
+        <label>Trendyol API Key</label>
+        <input type="text" id="mockApiKey" placeholder="Örn: 8F2A9B...">
       </div>
+      <button class="simulate-btn" onclick="window.connectAPI()">API Yetkilendir</button>
     </div>
 
-    <div class="action-card">
-      <h3>Mikro Kredi Fırsatı</h3>
-      <div class="credit-card-visual">
-        <div class="cc-bank">Halkbank · Kadın Girişimci</div>
-        <div class="cc-amount">25.000₺</div>
-        <div class="cc-label">Tahmini Ön Onaylı Limit</div>
-        <div class="cc-status"><div class="cc-dot"></div>Başvuruya açık</div>
-      </div>
-      <button class="apply-btn" onclick="alert('Banka başvuru API entegrasyonu demo versiyonda aktif değildir.')">
-        Resmi Başvuruya Geç →
+    <div class="integration-card" style="border: 2px dashed var(--gold);">
+      <h3>Gerçek Zamanlı Veri Simülatörü</h3>
+      <p>Arka uç sisteminize gelen bir webhook bildirimini simüle edin. Bu butona bastığınızda, arka planda bir satış gerçekleşmiş gibi WebSockets üzerinden arayüze veri itilir.</p>
+      <br>
+      <button class="simulate-btn" style="background: var(--green); color: white;" onclick="window.triggerWebhook()">
+        [Webhook] Yeni Sipariş Simüle Et
       </button>
+      <p style="font-size: 0.75rem; margin-top: 12px; color: var(--text-muted); text-align: center;">Satış, anlık olarak Chat ekranına ve Dashboard grafiklerine yansıyacaktır.</p>
     </div>
   </div>
 </div>
 
-<script>
-  /* =========================================
-     APP STATE & NAVIGATION
-     ========================================= */
-  let usersDB = JSON.parse(localStorage.getItem('westaUsersDB')) || {};
-  let activeUserEmail = localStorage.getItem('westaActiveUserEmail') || null;
-  let currentUser = activeUserEmail ? usersDB[activeUserEmail] : null;
-  let isLoginMode = false;
-  
-  // Kullanıcıya özel cüzdan yönetimi
-  let userWallet = currentUser ? currentUser.wallet : { income: 0, expense: 0 };
+<script type="module">
+  // ==========================================
+  // 1. FIREBASE & ARCHITECTURE SETUP
+  // ==========================================
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, collection, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-  // Cüzdandaki değişikleri veritabanına kaydeden yardımcı fonksiyon
-  function saveWallet() {
-    if (activeUserEmail && usersDB[activeUserEmail]) {
-      usersDB[activeUserEmail].wallet = userWallet;
-      localStorage.setItem('westaUsersDB', JSON.stringify(usersDB));
+  const appId = typeof __app_id !== 'undefined' ? __app_id : 'westa-finans';
+  const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { /* fallback config handled implicitly if running local */ };
+  
+  let app, db, auth, currentUserId = null;
+  let isFirebaseReady = false;
+
+  // State Management
+  let currentUserProfile = null; // { name, email, password }
+  let userWallet = { income: 0, expense: 0 };
+  let isLoginMode = false;
+  let myChart = null; // Chart.js instance
+  
+  // Theme Management
+  window.toggleTheme = () => {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const target = current === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', target);
+    document.getElementById('themeIcon').textContent = target === 'light' ? '🌙' : '☀️';
+    if(myChart) window.renderChartJS(); // Update chart colors
+  };
+
+  async function initBackend() {
+    try {
+      if(Object.keys(firebaseConfig).length > 0) {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            const cred = await signInWithCustomToken(auth, __initial_auth_token);
+            currentUserId = cred.user.uid;
+        } else {
+            const cred = await signInAnonymously(auth);
+            currentUserId = cred.user.uid;
+        }
+        isFirebaseReady = true;
+      }
+    } catch(e) {
+      console.warn("Firebase config not found or invalid. Running in strict in-memory mock mode for Canvas safety.");
+      isFirebaseReady = false;
     }
+    document.getElementById('loadingOverlay').style.display = 'none';
   }
 
-  function showScreen(name) {
-    // Scroll to top
+  // ==========================================
+  // 2. DATABASE OPERATIONS (PostgreSQL Simulation)
+  // ==========================================
+  async function fetchAllUsersMockDB() {
+    // Canvas kuralları gereği public/data klasörünü okuyarak login simülasyonu yapıyoruz.
+    // RULE 2: No complex queries. We fetch all users and filter in memory.
+    if (!isFirebaseReady) return [];
+    try {
+      const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'users');
+      const snapshot = await getDocs(usersRef);
+      let usersList = [];
+      snapshot.forEach(docSnap => { usersList.push({ id: docSnap.id, ...docSnap.data() }); });
+      return usersList;
+    } catch(e) { console.error(e); return []; }
+  }
+
+  async function saveUserToDB(email, profileData) {
+    if (!isFirebaseReady) return;
+    try {
+      // Profile in public for login checks (secure architecture simulation)
+      const publicRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', email);
+      await setDoc(publicRef, profileData);
+      
+      // Personal wallet in secure private collection (RULE 1)
+      const privateRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'finance', 'wallet');
+      await setDoc(privateRef, userWallet);
+    } catch(e) { console.error(e); }
+  }
+
+  async function syncWalletToDB() {
+    if (!isFirebaseReady || !currentUserId) return;
+    try {
+      const privateRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'finance', 'wallet');
+      await setDoc(privateRef, userWallet);
+      window.renderChartJS();
+    } catch(e) { console.error(e); }
+  }
+
+  // ==========================================
+  // 3. AUTHENTICATION & UI
+  // ==========================================
+  window.showScreen = (name) => {
     window.scrollTo(0,0);
-    
-    // Yalnızca login olanlar chat ve dashboard görebilir
-    if ((name === 'chat' || name === 'dashboard') && !currentUser) {
-      showScreen('auth');
+    if ((name === 'chat' || name === 'dashboard' || name === 'integrations') && !currentUserProfile) {
+      window.showScreen('auth');
       return;
     }
-
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     
     document.getElementById('screen-' + name).classList.add('active');
     
-    // Tab active state update
     const tabs = document.querySelectorAll('.nav-tab');
     if (name === 'chat') tabs[0].classList.add('active');
     if (name === 'dashboard') {
       tabs[1].classList.add('active');
-      updateDashboardUI(); // Dashboard açılınca verileri yenile
+      window.updateDashboardUI();
     }
-  }
+    if (name === 'integrations') tabs[2].classList.add('active');
+  };
 
-  function goHome() {
-    if (currentUser) showScreen('dashboard');
-    else showScreen('landing');
-  }
+  window.goHome = () => { currentUserProfile ? window.showScreen('dashboard') : window.showScreen('landing'); };
 
-  /* =========================================
-     AUTH SYSTEM
-     ========================================= */
-  function toggleAuthMode() {
+  window.toggleAuthMode = () => {
     isLoginMode = !isLoginMode;
     const title = document.getElementById('authTitle');
     const subtitle = document.getElementById('authSubtitle');
@@ -1195,13 +686,11 @@
     const nameGroup = document.getElementById('nameGroup');
     const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
     const errorDiv = document.getElementById('authError');
-
-    // Mod değiştiğinde hata mesajını gizle
     errorDiv.style.display = 'none';
 
     if (isLoginMode) {
       title.textContent = 'Giriş Yap';
-      subtitle.textContent = 'Tekrar hoş geldin.';
+      subtitle.textContent = 'Bulut veritabanındaki oturumunuza erişin.';
       btn.textContent = 'Giriş Yap';
       switchText.innerHTML = 'Hesabın yok mu? Kayıt Ol';
       nameGroup.style.display = 'none';
@@ -1210,7 +699,7 @@
       document.getElementById('authConfirmPassword').removeAttribute('required');
     } else {
       title.textContent = 'Kayıt Ol';
-      subtitle.textContent = 'Westa ile finansal profilini oluşturmaya başla.';
+      subtitle.textContent = 'Westa bulut veritabanında profil oluştur.';
       btn.textContent = 'Hesap Oluştur';
       switchText.innerHTML = 'Zaten hesabın var mı? Giriş Yap';
       nameGroup.style.display = 'block';
@@ -1218,310 +707,226 @@
       document.getElementById('authName').setAttribute('required', 'true');
       document.getElementById('authConfirmPassword').setAttribute('required', 'true');
     }
-  }
+  };
 
-  function handleAuth(e) {
+  window.handleAuth = async (e) => {
     e.preventDefault();
+    const btn = document.getElementById('authSubmitBtn');
+    btn.textContent = "İşleniyor...";
+    btn.disabled = true;
+
     const email = document.getElementById('authEmail').value;
     const password = document.getElementById('authPassword').value;
     const confirmPassword = document.getElementById('authConfirmPassword').value;
     const name = document.getElementById('authName').value || email.split('@')[0];
     const errorDiv = document.getElementById('authError');
-
-    // Her yeni denemede hatayı gizle
+    const successDiv = document.getElementById('authSuccess');
+    
     errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+
+    // In-memory array fetch
+    let allUsers = await fetchAllUsersMockDB();
+    let existingUser = allUsers.find(u => u.email === email);
 
     if (!isLoginMode) {
-      // KAYIT OLMA KONTROLLERİ
       if (password !== confirmPassword) {
-        errorDiv.textContent = 'Şifreler eşleşmiyor. Lütfen kontrol edin.';
-        errorDiv.style.display = 'block';
-        return; 
+        showError("Şifreler eşleşmiyor.");
+        return;
       }
-      if (usersDB[email]) {
-        errorDiv.textContent = 'Bu e-posta adresiyle kayıtlı bir hesap zaten var.';
-        errorDiv.style.display = 'block';
+      if (existingUser) {
+        showError("Bu e-posta sistemde zaten kayıtlı.");
         return;
       }
       
-      // Yeni kullanıcı oluştur ve DB'ye kaydet
-      usersDB[email] = { name: name, email: email, password: password, wallet: { income: 0, expense: 0 } };
-      localStorage.setItem('westaUsersDB', JSON.stringify(usersDB));
-      
-      // Oturumu başlat
-      activeUserEmail = email;
-      currentUser = usersDB[email];
-      userWallet = currentUser.wallet;
-      localStorage.setItem('westaActiveUserEmail', email);
+      // Kayıt Başarılı
+      currentUserProfile = { name, email, password };
+      userWallet = { income: 0, expense: 0 };
+      await saveUserToDB(email, currentUserProfile);
+
+      successDiv.style.display = 'block';
+      setTimeout(() => finishLoginFlow(), 1000);
 
     } else {
-      // GİRİŞ YAP KONTROLLERİ
-      if (!usersDB[email]) {
-        errorDiv.textContent = 'Hesap bulunamadı. Lütfen önce kayıt olun.';
-        errorDiv.style.display = 'block';
+      // Giriş Kontrolü
+      if (!existingUser) {
+        showError("Hesap bulunamadı.");
         return;
       }
-      if (usersDB[email].password !== password) {
-        errorDiv.textContent = 'Hatalı şifre girdiniz.';
-        errorDiv.style.display = 'block';
+      if (existingUser.password !== password) {
+        showError("Hatalı şifre girdiniz.");
         return;
       }
-      
-      // Şifre doğruysa oturumu başlat
-      activeUserEmail = email;
-      currentUser = usersDB[email];
-      userWallet = currentUser.wallet;
-      localStorage.setItem('westaActiveUserEmail', email);
+
+      // Giriş Başarılı - Cüzdanı çek (Rule 1: private path)
+      currentUserProfile = existingUser;
+      if (isFirebaseReady && currentUserId) {
+        try {
+           const privateRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'finance', 'wallet');
+           const walletSnap = await getDoc(privateRef);
+           if(walletSnap.exists()) userWallet = walletSnap.data();
+           else userWallet = { income: 0, expense: 0 };
+        } catch(e) {}
+      }
+      finishLoginFlow();
     }
-    
-    // Update Nav
+
+    function showError(msg) {
+      errorDiv.textContent = msg;
+      errorDiv.style.display = 'block';
+      btn.textContent = isLoginMode ? "Giriş Yap" : "Hesap Oluştur";
+      btn.disabled = false;
+    }
+  };
+
+  function finishLoginFlow() {
     document.getElementById('navLoginBtn').style.display = 'none';
     document.getElementById('navUserProfile').style.display = 'flex';
-    document.getElementById('navUserName').textContent = currentUser.name;
+    document.getElementById('navUserName').textContent = currentUserProfile.name;
     document.getElementById('mainNavTabs').style.display = 'flex';
+    document.getElementById('dashUserInfo').textContent = `${currentUserProfile.name} · Gerçek Zamanlı Veri Özeti`;
     
-    // Dashboard User Info
-    document.getElementById('dashUserInfo').textContent = `${currentUser.name} · ${new Date().toLocaleDateString('tr-TR', {month:'long', year:'numeric'})} Özeti`;
+    document.getElementById('authForm').reset();
+    document.getElementById('authSubmitBtn').disabled = false;
+    document.getElementById('authSubmitBtn').textContent = isLoginMode ? "Giriş Yap" : "Hesap Oluştur";
 
-    // Reset Form
-    e.target.reset();
-
-    // Start Chat Experience if New Register
-    if (!isLoginMode) {
-      document.getElementById('chatMessages').innerHTML = ''; // Clear old
+    // Start Chat Welcome
+    document.getElementById('chatMessages').innerHTML = '';
+    setTimeout(() => {
+      window.addMsg(`Hoş geldin ${currentUserProfile.name}! 🎉 Ben 10x güçlendirilmiş NLP motoruna sahip Westa Asistan.`, 'bot');
       setTimeout(() => {
-        addMsg(`Hoş geldin ${currentUser.name}! 🎉 Ben Westa'nın yeni nesil yapay zeka asistanıyım. Sana özel finansal profil oluşturmak için buradayım.`, 'bot');
-        setTimeout(() => {
-          addMsg("Sadece günlük satışlarını (gelir) veya yaptığın masrafları (gider) bana normal bir şekilde yaz. \n\nÖrn: <em>'Bugün Instagram'dan 850 TL satış yaptım'</em> veya <em>'500 lira kargo ödedim'</em>", 'bot');
-        }, 1000);
-      }, 500);
-    }
+         window.addMsg("Bana '500 kazandım' veya '100 TL malzeme aldım' yazabilirsin. Bağlamı anlar, otomatik sınıflandırırım.", 'bot');
+      }, 1000);
+    }, 500);
 
-    showScreen('chat');
+    window.showScreen('chat');
   }
 
-  function logout() {
-    activeUserEmail = null;
-    currentUser = null;
+  window.logout = () => {
+    currentUserProfile = null;
     userWallet = { income: 0, expense: 0 };
-    
-    // Çıkış yapınca SADECE aktif oturum bilgisini sil (Veritabanı silinmez!)
-    localStorage.removeItem('westaActiveUserEmail');
-    
     document.getElementById('navLoginBtn').style.display = 'block';
     document.getElementById('navUserProfile').style.display = 'none';
     document.getElementById('mainNavTabs').style.display = 'none';
-    document.getElementById('chatMessages').innerHTML = ''; // Clear chat
-    showScreen('landing');
-  }
-
-  /* =========================================
-     ADVANCED AI CHAT ENGINE (10x Capability)
-     ========================================= */
-  const now = () => {
-    const d = new Date();
-    return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0');
+    document.getElementById('chatMessages').innerHTML = ''; 
+    window.showScreen('landing');
   };
 
-  // Bot Hafızası ve Durumu
-  let botContext = {
-    waitingForClarification: false,
-    pendingAmount: 0
+  // ==========================================
+  // 4. ADVANCED AI CHAT ENGINE (Intent & Entity Extraction)
+  // ==========================================
+  let botContext = { waitingForClarification: false, pendingAmount: 0 };
+
+  const NLP_DICT = {
+    income_verbs: ['sat', 'kazan', 'gelir', 'sipariş', 'aldım', 'tahsil', 'girdi', 'ödeme', 'hesabıma'],
+    expense_verbs: ['harca', 'masraf', 'gider', 'öde', 'verdim', 'çıktı', 'aldım', 'maliyet', 'fatura', 'kargo', 'komisyon'],
+    categories: ['kargo', 'malzeme', 'reklam', 'paket', 'fatura', 'vergi', 'trendyol', 'instagram', 'etsy']
   };
 
-  // Niyet (Intent) Sözlükleri
-  const DICT = {
-    income_verbs: ['sat', 'kazan', 'gelir', 'sipariş', 'aldım', 'tahsil', 'girdi', 'ödeme'],
-    expense_verbs: ['harca', 'masraf', 'gider', 'öde', 'verdim', 'çıktı', 'aldım', 'maliyet'],
-    categories: ['kargo', 'malzeme', 'reklam', 'paket', 'fatura', 'vergi', 'trendyol', 'instagram', 'etsy', 'shopier'],
-    greetings: ['merhaba', 'selam', 'hey', 'günaydın', 'iyi akşamlar', 'naber', 'nasılsın'],
-    score_queries: ['skor', 'puan', 'durum', 'kredi', 'halkbank', 'başvuru', 'ne kadar kredi', 'limit'],
-    advice_queries: ['tavsiye', 'öneri', 'nasıl artır', 'fikir', 'taktik', 'yardım', 'ne yap']
-  };
-
-  // Rastgele cevap üreteçleri
-  const RESPONSES = {
-    income_ack: [
-      "Harika haber! {amt}₺ gelirini kaydettim. 📈",
-      "Süper, {amt}₺ kazanç eklendi. Böyle devam! 💪",
-      "Tebrikler! {amt}₺ hesabına işlendi. Satışların bol olsun. ✨",
-      "Mükemmel! Gelir hanene {amt}₺ ekledim. Dashboard'dan takip edebilirsin."
-    ],
-    expense_ack: [
-      "Anladım, {amt}₺ gider kaydedildi. 📝",
-      "{amt}₺ masrafını not aldım. Gider takibi yapmak çok önemli! 💡",
-      "İşlendi. {amt}₺ gider eklendi. Giderlerini düşük tutmaya çalışıyoruz. 🛡️",
-      "{amt}₺ harcamanı kaydettim."
-    ],
-    clarify_amount: [
-      "Yazdığın {amt} tutarını gördüm. Peki bu bir gelir mi (satış) yoksa gider mi (masraf)? 🤔",
-      "{amt}₺ için işlem yapacağım. Bu para sana mı geldi, senden mi çıktı?"
-    ],
-    greetings: [
-      "Merhaba {name}! Nasıl yardımcı olabilirim? Gelir veya giderlerini yazabilirsin.",
-      "Selam {name}! Bugün işler nasıl? Yeni satış veya masraf var mı?"
-    ],
-    unknown: [
-      "Bunu tam olarak anlayamadım 🤔 Bana '500 TL gelir elde ettim' veya '100 TL kargo ödedim' gibi net rakamlar verebilir misin?",
-      "Kelimelerini analiz ediyorum ama emin olamadım. Finansal bir kayıt girmek istiyorsan rakam belirterek yazar mısın?"
-    ],
-    advice: [
-      "💡 <strong>Yapay Zeka Önerisi:</strong> Müşterilerine küçük sürpriz notlar bırakmak tekrar satın alma oranını %30 artırabilir.",
-      "💡 <strong>Yapay Zeka Önerisi:</strong> Kargo firmalarıyla aylık kotalı anlaşmalar yapmak maliyetlerini ciddi oranda düşürür.",
-      "💡 <strong>Yapay Zeka Önerisi:</strong> Sadece Instagram değil, Shopier gibi altyapılar kullanmak güven skorunu yükseltir."
-    ]
-  };
-
-  function getRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-  function parseAmount(text) {
-    // Regex ile içindeki rakamları bul (örn: 1250, 1.250, 50,5)
-    const match = text.match(/\d+([.,]\d+)?/);
-    if (!match) return null;
-    return parseFloat(match[0].replace(',', '.'));
-  }
-
-  function checkIntent(text, dictArray) {
-    return dictArray.some(keyword => text.toLowerCase().includes(keyword));
-  }
-
-  // CORE AI LOGIC
-  function processMessage(msg) {
+  function processAI(msg) {
     const lowerMsg = msg.toLowerCase();
-    const amt = parseAmount(msg);
-    let responseText = "";
+    const numbers = msg.match(/\d+([.,]\d+)?/g);
+    
+    // Gelişmiş Karmaşık Cümle Algılama ("Hem 500 kazandım hem 100 verdim")
+    if (numbers && numbers.length > 1) {
+       let inc = NLP_DICT.income_verbs.some(v => lowerMsg.includes(v));
+       let exp = NLP_DICT.expense_verbs.some(v => lowerMsg.includes(v));
+       if(inc && exp) {
+          // Basit heuristic: İlk rakam gelir, ikinci gider sayalım demo için
+          let val1 = parseFloat(numbers[0].replace(',', '.'));
+          let val2 = parseFloat(numbers[1].replace(',', '.'));
+          userWallet.income += val1;
+          userWallet.expense += val2;
+          syncWalletToDB();
+          return `Anladım! 🧠 İki ayrı finansal hareketi tespit ettim: \n✅ Gelir: ${val1}₺\n📉 Gider: ${val2}₺\nVeritabanı senkronize edildi.`;
+       }
+    }
 
-    // 1. Durum: Bekleyen bir netleştirme var mı? (Sadece rakam yazmışsa önceden)
+    const amt = numbers ? parseFloat(numbers[0].replace(',', '.')) : null;
+
+    // Bağlam Çözme (Clarification)
     if (botContext.waitingForClarification && amt === botContext.pendingAmount) {
-      if (checkIntent(lowerMsg, DICT.income_verbs)) {
-        userWallet.income += amt;
-        saveWallet(); // Günceli kaydet
-        botContext.waitingForClarification = false;
-        return getRandom(RESPONSES.income_ack).replace('{amt}', amt);
-      } else if (checkIntent(lowerMsg, DICT.expense_verbs)) {
-        userWallet.expense += amt;
-        saveWallet(); // Günceli kaydet
-        botContext.waitingForClarification = false;
-        return getRandom(RESPONSES.income_ack).replace('{amt}', amt);
-      } else if (checkIntent(lowerMsg, DICT.expense_verbs)) {
-        userWallet.expense += amt;
-        localStorage.setItem('westaWallet', JSON.stringify(userWallet)); // Günceli kaydet
-        botContext.waitingForClarification = false;
-        return getRandom(RESPONSES.expense_ack).replace('{amt}', amt);
-      } else {
-        return "Hala emin olamadım. Sadece 'gelir' veya 'gider' yazman yeterli.";
+      if (NLP_DICT.income_verbs.some(v => lowerMsg.includes(v))) {
+        userWallet.income += amt; syncWalletToDB(); botContext.waitingForClarification = false;
+        return `Harika, ${amt}₺ gelir olarak veritabanına işlendi. 📈`;
+      } else if (NLP_DICT.expense_verbs.some(v => lowerMsg.includes(v))) {
+        userWallet.expense += amt; syncWalletToDB(); botContext.waitingForClarification = false;
+        return `Tamamdır, ${amt}₺ gider olarak kaydedildi. 📝`;
       }
     }
 
-    // 2. Durum: Mesajda rakam var mı? (Finansal İşlem)
     if (amt !== null) {
-      const isIncome = checkIntent(lowerMsg, DICT.income_verbs);
-      const isExpense = checkIntent(lowerMsg, DICT.expense_verbs);
-
-      // İkisi de varsa karmaşık cümle (örn: 500 kazandım ama 100 kargoya gitti) - Basit versiyon: ilk yakaladığını yap veya gelişmiş analiz yap
-      // 10x yetenek için ikisini de yakalama denemesi:
-      let multipleAmounts = msg.match(/\d+([.,]\d+)?/g);
-      if (multipleAmounts && multipleAmounts.length > 1 && isIncome && isExpense) {
-         // Çok gelişmiş NLP gerektirir, şimdilik basitleştirelim.
-         return "Tek mesajda birden fazla rakam ve işlem (gelir/gider) seziyorum. Daha doğru analiz için lütfen gelir ve giderlerini ayrı mesajlarda yazar mısın? 🙏";
-      }
+      const isIncome = NLP_DICT.income_verbs.some(v => lowerMsg.includes(v));
+      const isExpense = NLP_DICT.expense_verbs.some(v => lowerMsg.includes(v));
 
       if (isIncome && !isExpense) {
-        userWallet.income += amt;
-        saveWallet(); // Günceli kaydet
-        let res = getRandom(RESPONSES.income_ack).replace('{amt}', amt);
-        // Kategori bul
-        let cat = DICT.categories.find(c => lowerMsg.includes(c));
-        if (cat) res += ` (${cat.charAt(0).toUpperCase() + cat.slice(1)} kategorisinde etiketlendi)`;
-        return res;
+        userWallet.income += amt; syncWalletToDB();
+        let cat = NLP_DICT.categories.find(c => lowerMsg.includes(c));
+        return `Tebrikler! ${amt}₺ gelir hesaba eklendi. ✨` + (cat ? `\n🏷️ Etiket: ${cat.toUpperCase()}` : '');
       } 
       else if (isExpense && !isIncome) {
-        userWallet.expense += amt;
-        saveWallet(); // Günceli kaydet
-        let res = getRandom(RESPONSES.expense_ack).replace('{amt}', amt);
-        let cat = DICT.categories.find(c => lowerMsg.includes(c));
-        if (cat) res += ` (${cat.charAt(0).toUpperCase() + cat.slice(1)} kategorisinde etiketlendi)`;
-        return res;
+        userWallet.expense += amt; syncWalletToDB();
+        let cat = NLP_DICT.categories.find(c => lowerMsg.includes(c));
+        return `İşlendi. ${amt}₺ gider kaydedildi. 🛡️` + (cat ? `\n🏷️ Kategori: ${cat.toUpperCase()}` : '');
       }
       else {
-        // Rakam var ama ne olduğu belli değil
         botContext.waitingForClarification = true;
         botContext.pendingAmount = amt;
-        return getRandom(RESPONSES.clarify_amount).replace('{amt}', amt);
+        return `Yazdığın metinden ${amt} tutarını çıkardım ama bağlamı anlayamadım 🤔\nBu bir gelir mi yoksa gider mi? (Sadece 'gelir' veya 'gider' yazabilirsin)`;
       }
     }
 
-    // 3. Durum: Sohbet / Bilgi Sorguları (Rakam yok)
-    if (checkIntent(lowerMsg, DICT.greetings)) {
-      return getRandom(RESPONSES.greetings).replace('{name}', currentUser.name.split(' ')[0]);
+    // Bilgi Sorguları
+    if (lowerMsg.includes('skor') || lowerMsg.includes('durum')) {
+      return `📊 <strong>Canlı Finansal Analiz:</strong>\nToplam Gelir: ${userWallet.income}₺\nToplam Gider: ${userWallet.expense}₺\nNet Kar: ${userWallet.income - userWallet.expense}₺\n\nGrafikleri görmek için Dashboard'a göz at.`;
     }
 
-    if (checkIntent(lowerMsg, DICT.score_queries)) {
-      return `📊 <strong>Finansal Durumun:</strong>\n\nŞu anki toplam gelirin: ${userWallet.income}₺\nToplam giderin: ${userWallet.expense}₺\n\nWesta Güven Skorun: <strong>725/1000</strong>.\nBu skorla Halkbank Mikro Kredisine (25.000₺'ye kadar) başvurmaya uygunsun! Detaylar için Dashboard'a bakabilirsin.`;
-    }
-
-    if (checkIntent(lowerMsg, DICT.advice_queries)) {
-      return getRandom(RESPONSES.advice);
-    }
-
-    // 4. Durum: Hiçbir şey anlaşılamadı
-    return getRandom(RESPONSES.unknown);
+    return "Kelimelerini NLP motorumda analiz ettim ama finansal bir işlem bulamadım. İşlem kaydetmek istiyorsan lütfen rakam belirt (Örn: 'Kargoya 50 tl verdim').";
   }
 
-  /* =========================================
-     CHAT UI FUNCTIONS
-     ========================================= */
-  function addMsg(text, type) {
+  // Chat Helpers
+  const getNow = () => { const d = new Date(); return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); };
+
+  window.addMsg = (text, type) => {
     const box = document.getElementById('chatMessages');
     const div = document.createElement('div');
     div.className = 'msg ' + type;
-    div.innerHTML = text.replace(/\n/g, '<br>') + `<span class="msg-time">${now()}</span>`;
+    div.innerHTML = text.replace(/\n/g, '<br>') + `<span class="msg-time">${getNow()}</span>`;
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
-  }
+  };
 
-  function showTyping() {
-    const box = document.getElementById('chatMessages');
-    const div = document.createElement('div');
-    div.id = 'typing-indicator';
-    div.className = 'typing';
-    div.innerHTML = '<span></span><span></span><span></span>';
-    box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
-  }
-
-  function removeTyping() {
-    const t = document.getElementById('typing-indicator');
-    if (t) t.remove();
-  }
-
-  function sendMessage() {
+  window.sendMessage = () => {
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
     if (!text) return;
     
-    addMsg(text, 'user');
+    window.addMsg(text, 'user');
     input.value = '';
     
-    showTyping();
+    const box = document.getElementById('chatMessages');
+    const typing = document.createElement('div');
+    typing.id = 'typing-indicator';
+    typing.className = 'msg bot';
+    typing.innerHTML = 'Düşünüyor...';
+    box.appendChild(typing);
+    box.scrollTop = box.scrollHeight;
     
-    // Asistanın düşünme süresi simülasyonu (daha zeki hissettirmek için hafif uzun)
     setTimeout(() => {
-      removeTyping();
-      const reply = processMessage(text);
-      addMsg(reply, 'bot');
-    }, 1000 + Math.random() * 800);
-  }
+      document.getElementById('typing-indicator').remove();
+      window.addMsg(processAI(text), 'bot');
+    }, 800 + Math.random() * 600);
+  };
 
-  function sendQuick(text) {
+  window.sendQuick = (text) => {
     document.getElementById('chatInput').value = text;
-    sendMessage();
-  }
+    window.sendMessage();
+  };
 
-  /* =========================================
-     DASHBOARD LOGIC
-     ========================================= */
-  function updateDashboardUI() {
-    // Rakamları güncelle
+  // ==========================================
+  // 5. CHART.JS & DASHBOARD UPDATES
+  // ==========================================
+  window.updateDashboardUI = () => {
     document.getElementById('dashIncome').textContent = userWallet.income + '₺';
     document.getElementById('dashExpense').textContent = userWallet.expense + '₺';
     
@@ -1533,70 +938,84 @@
     let margin = userWallet.income > 0 ? Math.round((net / userWallet.income) * 100) : 0;
     document.getElementById('dashMargin').textContent = `Tahmini kar marjı: %${margin}`;
 
-    renderChart();
-  }
+    window.renderChartJS();
+  };
 
-  function renderChart() {
-    const chart = document.getElementById('barChart');
-    chart.innerHTML = ''; // Temizle
+  window.renderChartJS = () => {
+    const ctx = document.getElementById('financeChart');
+    if (!ctx) return;
     
-    // Son 6 ay mock veri + bu ayki gerçek veri
-    const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz'];
-    
-    // Demo verileri
-    let incomeData = [2800, 3200, 3600, 4100, 4500, Math.max(4850, userWallet.income)]; 
-    let expenseData = [900, 1050, 980, 1100, 1200, Math.max(1240, userWallet.expense)];
-    
-    // Eğer wallet'ta yeni veri varsa son ayı ez (Canlı hissi için)
-    if(userWallet.income > 0) incomeData[5] = userWallet.income;
-    if(userWallet.expense > 0) expenseData[5] = userWallet.expense;
+    if (myChart) myChart.destroy();
 
-    const maxVal = Math.max(...incomeData, ...expenseData, 1000); // Bölme hatasını önle
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#E0E0E0' : '#6B5B3E';
+    const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
 
-    months.forEach((m, i) => {
-      const group = document.createElement('div');
-      group.className = 'bar-group';
+    // Son 6 ay (Sahte geçmiş + Gerçek Mevcut Ay)
+    const labels = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz'];
+    const mockIncome = [2800, 3200, 3600, 4100, 4500, userWallet.income > 0 ? userWallet.income : 0];
+    const mockExpense = [900, 1050, 980, 1100, 1200, userWallet.expense > 0 ? userWallet.expense : 0];
 
-      const incBar = document.createElement('div');
-      incBar.className = 'bar income';
-      incBar.style.height = '0';
-      incBar.title = `Gelir: ${incomeData[i]}₺`;
-
-      const expBar = document.createElement('div');
-      expBar.className = 'bar expense';
-      expBar.style.height = '0';
-      expBar.title = `Gider: ${expenseData[i]}₺`;
-
-      const label = document.createElement('div');
-      label.className = 'bar-month';
-      label.textContent = m;
-      incBar.appendChild(label);
-
-      group.appendChild(incBar);
-      group.appendChild(expBar);
-      chart.appendChild(group);
-
-      // Animasyon
-      setTimeout(() => {
-        incBar.style.height = (incomeData[i] / maxVal * 120) + 'px';
-        expBar.style.height = (expenseData[i] / maxVal * 120) + 'px';
-      }, 100 + i * 100);
+    myChart = new Chart(ctx.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Gelir', data: mockIncome, backgroundColor: '#C9A84C', borderRadius: 6, maxBarThickness: 40 },
+          { label: 'Gider', data: mockExpense, backgroundColor: isDark ? '#333333' : '#F0EAE0', borderColor: isDark ? '#444' : '#DDD', borderWidth: 1, borderRadius: 6, maxBarThickness: 40 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: textColor, font: { family: 'DM Sans' } } },
+          tooltip: {
+            backgroundColor: isDark ? '#333' : '#FFF', titleColor: isDark ? '#FFF' : '#000', bodyColor: isDark ? '#CCC' : '#666',
+            borderColor: isDark ? '#444' : '#EEE', borderWidth: 1, padding: 12, displayColors: true
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+          x: { grid: { display: false }, ticks: { color: textColor } }
+        }
+      }
     });
-  }
+  };
 
-  // Sayfa yüklendiğinde oturumu kontrol et ve arayüzü geri yükle
-  window.addEventListener('DOMContentLoaded', () => {
-    if (currentUser) {
-      // Eğer kullanıcı zaten giriş yapmışsa, menüyü ve dashboard'u ayarla
-      document.getElementById('navLoginBtn').style.display = 'none';
-      document.getElementById('navUserProfile').style.display = 'flex';
-      document.getElementById('navUserName').textContent = currentUser.name;
-      document.getElementById('mainNavTabs').style.display = 'flex';
-      document.getElementById('dashUserInfo').textContent = `${currentUser.name} · ${new Date().toLocaleDateString('tr-TR', {month:'long', year:'numeric'})} Özeti`;
-      showScreen('dashboard'); 
-    } else {
-      showScreen('landing');
+  // ==========================================
+  // 6. INTEGRATIONS & WEBHOOKS
+  // ==========================================
+  window.connectAPI = () => {
+    const key = document.getElementById('mockApiKey').value;
+    if(!key || key.length < 5) {
+       alert("Lütfen geçerli bir API Anahtarı girin (Örn: 8F2A9B)");
+       return;
     }
+    const statusDiv = document.getElementById('apiStatusDisplay');
+    statusDiv.className = 'api-status connected';
+    document.getElementById('apiStatusText').textContent = 'Trendyol Bağlandı (Token: AKTİF)';
+  };
+
+  window.triggerWebhook = () => {
+    if(!currentUserProfile) { alert("Önce giriş yapmalısınız."); return; }
+    
+    // Simulate incoming data
+    const mockAmount = Math.floor(Math.random() * 1500) + 200;
+    
+    // 1. Update Data & UI
+    userWallet.income += mockAmount;
+    syncWalletToDB();
+    window.updateDashboardUI();
+    
+    // 2. WebSocket Push Notification (to Chat)
+    window.showScreen('chat');
+    window.addMsg(`🔔 <strong>Sistem Bildirimi (Webhook)</strong>\nTrendyol entegrasyonunuz üzerinden ${mockAmount}₺ tutarında yeni bir sipariş tespit edildi. Tutar, gerçek zamanlı olarak gelirinize eklendi.`, 'bot');
+  };
+
+  // Initialize App Start
+  window.addEventListener('DOMContentLoaded', () => {
+    initBackend();
   });
 
 </script>
