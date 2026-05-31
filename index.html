@@ -975,6 +975,11 @@
         <label>Şifre</label>
         <input type="password" id="authPassword" placeholder="••••••••" required>
       </div>
+      <div class="form-group" id="confirmPasswordGroup">
+        <label>Şifre (Tekrar)</label>
+        <input type="password" id="authConfirmPassword" placeholder="••••••••" required>
+      </div>
+      <div id="authError" style="color: var(--red); font-size: 0.85rem; margin-bottom: 15px; display: none; text-align: center; font-weight: 600;"></div>
       <button type="submit" class="auth-btn" id="authSubmitBtn">Hesap Oluştur</button>
     </form>
     
@@ -1133,11 +1138,21 @@
   /* =========================================
      APP STATE & NAVIGATION
      ========================================= */
-  let currentUser = JSON.parse(localStorage.getItem('westaUser')) || null;
+  let usersDB = JSON.parse(localStorage.getItem('westaUsersDB')) || {};
+  let activeUserEmail = localStorage.getItem('westaActiveUserEmail') || null;
+  let currentUser = activeUserEmail ? usersDB[activeUserEmail] : null;
   let isLoginMode = false;
   
-  // Basit kullanıcı cüzdanı (localStorage destekli)
-  let userWallet = JSON.parse(localStorage.getItem('westaWallet')) || { income: 0, expense: 0 };
+  // Kullanıcıya özel cüzdan yönetimi
+  let userWallet = currentUser ? currentUser.wallet : { income: 0, expense: 0 };
+
+  // Cüzdandaki değişikleri veritabanına kaydeden yardımcı fonksiyon
+  function saveWallet() {
+    if (activeUserEmail && usersDB[activeUserEmail]) {
+      usersDB[activeUserEmail].wallet = userWallet;
+      localStorage.setItem('westaUsersDB', JSON.stringify(usersDB));
+    }
+  }
 
   function showScreen(name) {
     // Scroll to top
@@ -1178,6 +1193,11 @@
     const btn = document.getElementById('authSubmitBtn');
     const switchText = document.getElementById('authSwitchText');
     const nameGroup = document.getElementById('nameGroup');
+    const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
+    const errorDiv = document.getElementById('authError');
+
+    // Mod değiştiğinde hata mesajını gizle
+    errorDiv.style.display = 'none';
 
     if (isLoginMode) {
       title.textContent = 'Giriş Yap';
@@ -1185,28 +1205,74 @@
       btn.textContent = 'Giriş Yap';
       switchText.innerHTML = 'Hesabın yok mu? Kayıt Ol';
       nameGroup.style.display = 'none';
+      confirmPasswordGroup.style.display = 'none';
       document.getElementById('authName').removeAttribute('required');
+      document.getElementById('authConfirmPassword').removeAttribute('required');
     } else {
       title.textContent = 'Kayıt Ol';
       subtitle.textContent = 'Westa ile finansal profilini oluşturmaya başla.';
       btn.textContent = 'Hesap Oluştur';
       switchText.innerHTML = 'Zaten hesabın var mı? Giriş Yap';
       nameGroup.style.display = 'block';
+      confirmPasswordGroup.style.display = 'block';
       document.getElementById('authName').setAttribute('required', 'true');
+      document.getElementById('authConfirmPassword').setAttribute('required', 'true');
     }
   }
 
   function handleAuth(e) {
     e.preventDefault();
     const email = document.getElementById('authEmail').value;
+    const password = document.getElementById('authPassword').value;
+    const confirmPassword = document.getElementById('authConfirmPassword').value;
     const name = document.getElementById('authName').value || email.split('@')[0];
+    const errorDiv = document.getElementById('authError');
 
-    // Dummy Auth Process
-    currentUser = { name: name, email: email };
-    
-    // Verileri tarayıcıya kaydet (Kalıcılık)
-    localStorage.setItem('westaUser', JSON.stringify(currentUser));
-    localStorage.setItem('westaWallet', JSON.stringify(userWallet));
+    // Her yeni denemede hatayı gizle
+    errorDiv.style.display = 'none';
+
+    if (!isLoginMode) {
+      // KAYIT OLMA KONTROLLERİ
+      if (password !== confirmPassword) {
+        errorDiv.textContent = 'Şifreler eşleşmiyor. Lütfen kontrol edin.';
+        errorDiv.style.display = 'block';
+        return; 
+      }
+      if (usersDB[email]) {
+        errorDiv.textContent = 'Bu e-posta adresiyle kayıtlı bir hesap zaten var.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      // Yeni kullanıcı oluştur ve DB'ye kaydet
+      usersDB[email] = { name: name, email: email, password: password, wallet: { income: 0, expense: 0 } };
+      localStorage.setItem('westaUsersDB', JSON.stringify(usersDB));
+      
+      // Oturumu başlat
+      activeUserEmail = email;
+      currentUser = usersDB[email];
+      userWallet = currentUser.wallet;
+      localStorage.setItem('westaActiveUserEmail', email);
+
+    } else {
+      // GİRİŞ YAP KONTROLLERİ
+      if (!usersDB[email]) {
+        errorDiv.textContent = 'Hesap bulunamadı. Lütfen önce kayıt olun.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      if (usersDB[email].password !== password) {
+        errorDiv.textContent = 'Hatalı şifre girdiniz.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      
+      // Şifre doğruysa oturumu başlat
+      activeUserEmail = email;
+      currentUser = usersDB[email];
+      userWallet = currentUser.wallet;
+      localStorage.setItem('westaActiveUserEmail', email);
+    }
     
     // Update Nav
     document.getElementById('navLoginBtn').style.display = 'none';
@@ -1235,12 +1301,12 @@
   }
 
   function logout() {
+    activeUserEmail = null;
     currentUser = null;
     userWallet = { income: 0, expense: 0 };
     
-    // Çıkış yapınca tarayıcıdaki verileri temizle
-    localStorage.removeItem('westaUser');
-    localStorage.removeItem('westaWallet');
+    // Çıkış yapınca SADECE aktif oturum bilgisini sil (Veritabanı silinmez!)
+    localStorage.removeItem('westaActiveUserEmail');
     
     document.getElementById('navLoginBtn').style.display = 'block';
     document.getElementById('navUserProfile').style.display = 'none';
@@ -1328,7 +1394,12 @@
     if (botContext.waitingForClarification && amt === botContext.pendingAmount) {
       if (checkIntent(lowerMsg, DICT.income_verbs)) {
         userWallet.income += amt;
-        localStorage.setItem('westaWallet', JSON.stringify(userWallet)); // Günceli kaydet
+        saveWallet(); // Günceli kaydet
+        botContext.waitingForClarification = false;
+        return getRandom(RESPONSES.income_ack).replace('{amt}', amt);
+      } else if (checkIntent(lowerMsg, DICT.expense_verbs)) {
+        userWallet.expense += amt;
+        saveWallet(); // Günceli kaydet
         botContext.waitingForClarification = false;
         return getRandom(RESPONSES.income_ack).replace('{amt}', amt);
       } else if (checkIntent(lowerMsg, DICT.expense_verbs)) {
@@ -1356,7 +1427,7 @@
 
       if (isIncome && !isExpense) {
         userWallet.income += amt;
-        localStorage.setItem('westaWallet', JSON.stringify(userWallet)); // Günceli kaydet
+        saveWallet(); // Günceli kaydet
         let res = getRandom(RESPONSES.income_ack).replace('{amt}', amt);
         // Kategori bul
         let cat = DICT.categories.find(c => lowerMsg.includes(c));
@@ -1365,7 +1436,7 @@
       } 
       else if (isExpense && !isIncome) {
         userWallet.expense += amt;
-        localStorage.setItem('westaWallet', JSON.stringify(userWallet)); // Günceli kaydet
+        saveWallet(); // Günceli kaydet
         let res = getRandom(RESPONSES.expense_ack).replace('{amt}', amt);
         let cat = DICT.categories.find(c => lowerMsg.includes(c));
         if (cat) res += ` (${cat.charAt(0).toUpperCase() + cat.slice(1)} kategorisinde etiketlendi)`;
