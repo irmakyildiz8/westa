@@ -1133,11 +1133,11 @@
   /* =========================================
      APP STATE & NAVIGATION
      ========================================= */
-  let currentUser = null;
+  let currentUser = JSON.parse(localStorage.getItem('westaUser')) || null;
   let isLoginMode = false;
   
-  // Basit kullanıcı cüzdanı (demo için memory'de)
-  let userWallet = { income: 0, expense: 0 };
+  // Basit kullanıcı cüzdanı (localStorage destekli)
+  let userWallet = JSON.parse(localStorage.getItem('westaWallet')) || { income: 0, expense: 0 };
 
   function showScreen(name) {
     // Scroll to top
@@ -1204,6 +1204,10 @@
     // Dummy Auth Process
     currentUser = { name: name, email: email };
     
+    // Verileri tarayıcıya kaydet (Kalıcılık)
+    localStorage.setItem('westaUser', JSON.stringify(currentUser));
+    localStorage.setItem('westaWallet', JSON.stringify(userWallet));
+    
     // Update Nav
     document.getElementById('navLoginBtn').style.display = 'none';
     document.getElementById('navUserProfile').style.display = 'flex';
@@ -1233,6 +1237,11 @@
   function logout() {
     currentUser = null;
     userWallet = { income: 0, expense: 0 };
+    
+    // Çıkış yapınca tarayıcıdaki verileri temizle
+    localStorage.removeItem('westaUser');
+    localStorage.removeItem('westaWallet');
+    
     document.getElementById('navLoginBtn').style.display = 'block';
     document.getElementById('navUserProfile').style.display = 'none';
     document.getElementById('mainNavTabs').style.display = 'none';
@@ -1319,10 +1328,12 @@
     if (botContext.waitingForClarification && amt === botContext.pendingAmount) {
       if (checkIntent(lowerMsg, DICT.income_verbs)) {
         userWallet.income += amt;
+        localStorage.setItem('westaWallet', JSON.stringify(userWallet)); // Günceli kaydet
         botContext.waitingForClarification = false;
         return getRandom(RESPONSES.income_ack).replace('{amt}', amt);
       } else if (checkIntent(lowerMsg, DICT.expense_verbs)) {
         userWallet.expense += amt;
+        localStorage.setItem('westaWallet', JSON.stringify(userWallet)); // Günceli kaydet
         botContext.waitingForClarification = false;
         return getRandom(RESPONSES.expense_ack).replace('{amt}', amt);
       } else {
@@ -1345,6 +1356,7 @@
 
       if (isIncome && !isExpense) {
         userWallet.income += amt;
+        localStorage.setItem('westaWallet', JSON.stringify(userWallet)); // Günceli kaydet
         let res = getRandom(RESPONSES.income_ack).replace('{amt}', amt);
         // Kategori bul
         let cat = DICT.categories.find(c => lowerMsg.includes(c));
@@ -1353,6 +1365,7 @@
       } 
       else if (isExpense && !isIncome) {
         userWallet.expense += amt;
+        localStorage.setItem('westaWallet', JSON.stringify(userWallet)); // Günceli kaydet
         let res = getRandom(RESPONSES.expense_ack).replace('{amt}', amt);
         let cat = DICT.categories.find(c => lowerMsg.includes(c));
         if (cat) res += ` (${cat.charAt(0).toUpperCase() + cat.slice(1)} kategorisinde etiketlendi)`;
@@ -1499,6 +1512,21 @@
       }, 100 + i * 100);
     });
   }
+
+  // Sayfa yüklendiğinde oturumu kontrol et ve arayüzü geri yükle
+  window.addEventListener('DOMContentLoaded', () => {
+    if (currentUser) {
+      // Eğer kullanıcı zaten giriş yapmışsa, menüyü ve dashboard'u ayarla
+      document.getElementById('navLoginBtn').style.display = 'none';
+      document.getElementById('navUserProfile').style.display = 'flex';
+      document.getElementById('navUserName').textContent = currentUser.name;
+      document.getElementById('mainNavTabs').style.display = 'flex';
+      document.getElementById('dashUserInfo').textContent = `${currentUser.name} · ${new Date().toLocaleDateString('tr-TR', {month:'long', year:'numeric'})} Özeti`;
+      showScreen('dashboard'); 
+    } else {
+      showScreen('landing');
+    }
+  });
 
 </script>
 </body>
